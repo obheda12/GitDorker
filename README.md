@@ -1,7 +1,6 @@
 # GitDorker
 
-**GitDorker is a tool that utilizes the GitHub Search API and an extensive list of GitHub dorks that I've compiled from various sources to provide an overview of sensitive information stored on github given a search query. URLs for each dork are provided for the user to visit. This program serves to allow the user to enumerate their GitHub attack surface and utilize programs such as GitRob or Trufflehog on interesting repos or users discovered.
-![demo](https://i.ibb.co/NS92P2y/preview-git-Graber-monitoring-github-real-time.png)
+GitDorker is a tool that utilizes the GitHub Search API and an extensive list of GitHub dorks that I've compiled from various sources to provide an overview of sensitive information stored on github given a search query. URLs for each dork are provided for the user to visit. This program serves to allow the user to enumerate their GitHub attack surface and utilize programs such as GitRob or Trufflehog on interesting repos or users discovered.
 
 ## How it works ?
 
