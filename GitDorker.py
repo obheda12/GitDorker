@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Credits: Modified GitHub Dorker using GitAPI and JHaddix Github Dorks List. API Integration code borrowed and modified from Gwendal Le Coguic's scripts.
+# Credits: Modified GitHub Dorker using GitAPI and JHaddix Github Dorks List. API Integration code and structure borrowed and modified from Gwendal Le Coguic's scripts.
 # Author: Omar Bheda
 # Version: 1.1.2
 print("""
@@ -47,6 +47,12 @@ from multiprocessing.dummy import Pool
 TOKENS_FILE = os.path.dirname(os.path.realpath(__file__)) + '/.tokens'
 GITHUB_API_URL = 'https://api.github.com'
 
+#DECLARE LISTS
+t_tokens = []
+t_dorks = []
+t_queries = []
+t_orgs = []
+
 #PARSER CONFIG
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--dorks", help="dorks file (required)")
@@ -55,14 +61,8 @@ parser.add_argument("-e", "--threads", help="maximum n threads, default 1")
 parser.add_argument("-q", "--query", help="query (required or -q)")
 parser.add_argument("-o", "--org", help="organization (required or -o)")
 
-parser.parse_args()
+#ARGUMENTS CONFIG
 args = parser.parse_args()
-
-#DECLARE LISTS
-t_tokens = []
-t_dorks = []
-t_queries = []
-t_orgs = []
 
 #ARGUMENT LOGIC
 if args.token:
@@ -79,10 +79,10 @@ if not len(t_tokens):
     parser.error('auth token is missing')
 
 if args.query:
-    t_queries = args.query.split(',')
+    t_queries = args.query
 
 if args.org:
-    t_orgs = args.org.split(',')
+    t_orgs = args.org
 
 if args.threads:
     threads = int(args.threads)
