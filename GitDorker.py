@@ -22,7 +22,7 @@ github credential harvesters such as trufflehog or gitrob.
 **Potential Workflow**
 Use GitDorker >> Find Juicy Users / Repos >> Run GitRob / TruffleHog on interesting Users / Repos >> $$$PROFIT$$$
 
-EXAMPLE SYNTAX: python3 GitDorker.py -q texashealth.org -t TOKEN -d PATH/TO/DORKFILE -e 1
+EXAMPLE SYNTAX: python3 GitDorker.py -q QUERY -t TOKEN -d PATH/TO/DORKFILE -e 1
 
 RATE LIMIT NOTE: GitHub rate limits searches to 30 dorks every 60 seconds. To avoid 
 rate limits, ensure that each dork file fed to GitDorker consists of 30 lines or less. 
