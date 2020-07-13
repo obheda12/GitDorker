@@ -1,10 +1,10 @@
 # GitDorker
 GitDorker is a tool that utilizes the GitHub Search API and an extensive list of GitHub dorks that I've compiled from various sources to provide an overview of sensitive information stored on github given a search query. URLs for each dork are provided for the user to visit. This program serves to allow the user to enumerate their GitHub attack surface and utilize programs such as GitRob or Trufflehog on interesting repos or users discovered.
 
-## Notes
+## Additional INformation
 GitDorker utilizes the GitHub Search API and is limited to 30 requests per minute. In order to prevent rate limites a sleep function is built into GitDorker after every 30 requests to prevent search failures. Therefore, if one were to run use the alldorks.txt file with GitDorker, the process will take roughly 5 minutes to complete.
 
-This is an ongoing project I plan on building out to incorporate further functionality. Any suggestions are much appreciated. 
+Within the dorks folder are a list of dorks. It is recommended to use the "alldorks.txt" file when mapping out your github secrets attack surface.
 
 ## Screenshots
 Below is an example of the results from a query ran on "tesla.com" with a few dorks.
