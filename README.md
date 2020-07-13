@@ -7,7 +7,10 @@ GitDorker utilizes the GitHub Search API and is limited to 30 requests per minut
 This is an ongoing project I plan on building out to incorporate further functionality. Any suggestions are much appreciated. 
 
 ## Screenshots
+Below is an example of the results from a query ran on "tesla.com" with a few dorks.
 
+![Progress](https://github.com/obheda12/GitDorker/blob/master/progress_gitdorker.png)
+![Results](https://github.com/obheda12/GitDorker/blob/master/progress_gitdorker.png)
 
 
 ## Usage
