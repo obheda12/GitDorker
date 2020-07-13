@@ -173,7 +173,7 @@ print("""
 **********************
 """)
 print("")
-sys.stdout.write(colored('[#] %d dorks found.\n' % len(t_orgs), 'cyan'))
+sys.stdout.write(colored('[#] %d orgs found.\n' % len(t_orgs), 'cyan'))
 sys.stdout.write(colored('[#] %d dorks found.\n' % len(t_dorks), 'cyan'))
 sys.stdout.write(colored('[#] %d queries ran.\n' % len(t_queries), 'cyan'))
 sys.stdout.write(colored('[#] %d urls generated.\n' % len(t_urls), 'cyan'))
