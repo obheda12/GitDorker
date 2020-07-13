@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Credits: Modified GitHub Dorker using GitAPI and JHaddix Github Dorks List. API Integration code and structure borrowed and modified from Gwendal Le Coguic's scripts.
+# Credits: GitHub Dorker using GitAPI and my personal researched list of dorks. API search structure borrowed and modified / added upon from Gwendal Le Coguic's github-search scripts.
 # Author: Omar Bheda
 # Version: 1.1.2
 print("""
