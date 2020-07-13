@@ -10,7 +10,7 @@ This is an ongoing project I plan on building out to incorporate further functio
 Below is an example of the results from a query ran on "tesla.com" with a few dorks.
 
 ![Progress](https://github.com/obheda12/GitDorker/blob/master/progress_gitdorker.png)
-![Results](https://github.com/obheda12/GitDorker/blob/master/progress_gitdorker.png)
+![Results](https://github.com/obheda12/GitDorker/blob/master/Screen%20Shot%202020-07-13%20at%2012.54.33%20PM.png)
 
 
 ## Usage
