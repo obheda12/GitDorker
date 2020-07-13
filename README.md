@@ -28,7 +28,7 @@ optional arguments:
 
 Reference points for creating GitDorker.
 
-- [@hisxo](https://github.com/hisxo/gitGraber/
+- [@hisxo](https://github.com/hisxo)
 - [@gwendallecoguic](https://github.com/gwen001)
 
 
