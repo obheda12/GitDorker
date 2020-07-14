@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Credits: GitHub Dorker using GitAPI and my personal researched list of dorks. API search structure borrowed and modified / added upon from Gwendal Le Coguic's github-search scripts.
+# Credits: Modified GitHub Dorker using GitAPI and JHaddix Github Dorks List. API Integration code borrowed and modified from Gwendal Le Coguic's scripts.
 # Author: Omar Bheda
 # Version: 1.1.2
 print("""
@@ -22,7 +22,7 @@ github credential harvesters such as trufflehog or gitrob.
 **Potential Workflow**
 Use GitDorker >> Find Juicy Users / Repos >> Run GitRob / TruffleHog on interesting Users / Repos >> $$$PROFIT$$$
 
-EXAMPLE SYNTAX: python3 GitDorker.py -q QUERY -t TOKEN -d PATH/TO/DORKFILE -e 1
+EXAMPLE SYNTAX: python3 GitDorker.py -q DOMAIN -t TOKEN -d PATH/TO/DORKFILE -e 1
 
 RATE LIMIT NOTE: GitHub rate limits searches to 30 dorks every 60 seconds. To avoid 
 rate limits, ensure that each dork file fed to GitDorker consists of 30 lines or less. 
@@ -36,22 +36,18 @@ import os
 import sys
 import json
 import time
-import re
-import requests
 import argparse
 import random
+import re
+import requests
+import csv
+from itertools import zip_longest
 from termcolor import colored
 from multiprocessing.dummy import Pool
 
 #API CONFIG
-TOKENS_FILE = os.path.dirname(os.path.realpath(__file__)) + '/.tokens'
+# TOKENS_FILE = os.path.dirname(os.path.realpath(__file__))
 GITHUB_API_URL = 'https://api.github.com'
-
-#DECLARE LISTS
-t_tokens = []
-t_dorks = []
-t_queries = []
-t_orgs = []
 
 #PARSER CONFIG
 parser = argparse.ArgumentParser()
@@ -59,38 +55,48 @@ parser.add_argument("-d", "--dorks", help="dorks file (required)")
 parser.add_argument("-t", "--token", help="your github token (required)")
 parser.add_argument("-e", "--threads", help="maximum n threads, default 1")
 parser.add_argument("-q", "--query", help="query (required or -q)")
-parser.add_argument("-o", "--org", help="organization (required or -o)")
+parser.add_argument("-org", "--organization", help="organization (required or -o)")
+parser.add_argument("-o", "--output", help="organization (required or -o)")
 
-#ARGUMENTS CONFIG
+parser.parse_args()
 args = parser.parse_args()
+
+#DECLARE LISTS
+t_tokens = []
+t_dorks = []
+t_queries = []
+t_organizations = []
+
+rows = []
 
 #ARGUMENT LOGIC
 if args.token:
     t_tokens = args.token.split(',')
-else:
-    if os.path.isfile(TOKENS_FILE):
-        fp = open(TOKENS_FILE, 'r')
-        for line in fp:
-            r = re.search('^([a-f0-9]{40})$', line)
-            if r:
-                t_tokens.append(r.group(1))
+
+# else:
+#     if os.path.isfile(TOKENS_FILE):
+#         fp = open(TOKENS_FILE, 'r')
+#         for line in fp:
+#             r = re.search('^([a-f0-9]{40})$', line)
+#             if r:
+#                 t_tokens.append(r.group(1))
 
 if not len(t_tokens):
     parser.error('auth token is missing')
 
 if args.query:
-    t_queries = args.query
+    t_queries = args.query.split(',')
 
-if args.org:
-    t_orgs = args.org
+if args.organization:
+    t_organizations = args.organization.split(',')
 
 if args.threads:
     threads = int(args.threads)
 else:
     threads = 1
 
-if not args.query and not args.org:
-    parser.error('query or orgnanization missing')
+if not args.query and not args.organization:
+    parser.error('query or organization missing')
 
 if not args.dorks:
     parser.error('dorks file is missing')
@@ -101,6 +107,7 @@ for line in fp:
 
 #API SEARCH FUNCTION
 def githubApiSearchCode(url):
+
     sys.stdout.write('progress: %d/%d\r' % (t_stats['n_current'], t_stats['n_total_urls']))
     sys.stdout.flush()
     t_stats['n_current'] = t_stats['n_current'] + 1
@@ -110,14 +117,14 @@ def githubApiSearchCode(url):
     try:
         r = requests.get(url, headers=headers, timeout=5)
         json = r.json()
+
         if t_stats['n_current'] % 29 == 0:
-            for remaining in range(65, 0, -1):
+            for remaining in range(67, 0, -1):
                 sys.stdout.write("\r")
                 sys.stdout.write(colored("[#] (-_-)zzZZ sleeping to avoid rate limits |{:2d} seconds remaining.".format(remaining), "blue"))
                 sys.stdout.flush()
                 time.sleep(1)
-            sys.stdout.write(colored("\rContinue Dorking... ;)\n", "blue"))
-            # sys.stdout.write(colored("Continue Dorking... ;)", "blue"))
+            sys.stdout.write(colored("\r[#] Sleeping Finished!\n", "green"))
         if 'documentation_url' in json:
             print(colored("[-] error occurred: %s" % json['documentation_url'], 'red'))
         else:
@@ -125,6 +132,13 @@ def githubApiSearchCode(url):
 
     except Exception as e:
         print(colored("[-] error occurred: %s" % e, 'red'))
+        for remaining in range(67, 0, -1):
+            sys.stdout.write("\r")
+            sys.stdout.write(
+                colored("[#] (-_-)zzZZ sleeping due to error |{:2d} seconds remaining.".format(remaining), "blue"))
+            sys.stdout.flush()
+            time.sleep(1)
+            sys.stdout.write(colored("\r[#] Sleeping Finished!\n", "green"))
         return 0
 
 #URL ENCODING FUNCTION
@@ -148,18 +162,22 @@ t_stats = {
 for query in t_queries:
     t_results[query] = []
     for dork in t_dorks:
-        dork = "'{}'".format(query) + " " + dork
+        #IF SUBDOMAIN IS ENTERED SURROUND QUERY IN QUOTES
+        if ".com" in query:
+            dork = "'{}'".format(query) + " " + dork
+        else:
+            dork = "{}".format(query) + " " + dork
         url = 'https://api.github.com/search/code?q=' + __urlencode(dork)
         t_results[query].append(url)
         t_urls[url] = 0
 
 #CREATE ORGS
-for org in t_orgs:
-    t_results[org] = []
+for organization in t_organizations:
+    t_results[organization] = []
     for dork in t_dorks:
-        dork = 'org:' + org + ' ' + dork
+        dork = 'org:' + organization + ' ' + dork
         url = 'https://api.github.com/search/code?q=' + __urlencode(dork)
-        t_results[org].append( url )
+        t_results[organization].append( url )
         t_urls[url] = 0
 
 #STATS
@@ -173,7 +191,7 @@ print("""
 **********************
 """)
 print("")
-sys.stdout.write(colored('[#] %d orgs found.\n' % len(t_orgs), 'cyan'))
+sys.stdout.write(colored('[#] %d organizations found.\n' % len(t_organizations), 'cyan'))
 sys.stdout.write(colored('[#] %d dorks found.\n' % len(t_dorks), 'cyan'))
 sys.stdout.write(colored('[#] %d queries ran.\n' % len(t_queries), 'cyan'))
 sys.stdout.write(colored('[#] %d urls generated.\n' % len(t_urls), 'cyan'))
@@ -203,25 +221,58 @@ print("""
 *****************************
 """)
 print("")
+
+url2_list = []
+result_number_list = []
+
 for query in t_queries:
     print("QUERY PROVIDED: " + '>>>>> %s\n' % query)
     for url in t_results[query]:
         if url in t_results_urls:
-            url2 = '| DORK = ' + t_dorks[count] + ' | ' + url.replace('https://api.github.com/search/code', 'https://github.com/search') + '&s=indexed&type=Code&o=desc'
+            url2 = url.replace('https://api.github.com/search/code', 'https://github.com/search') + '&s=indexed&type=Code&o=desc'
+            dork_info = '| DORK = ' + t_dorks[count] + ' | '
+            new_url = dork_info + url2
+            # url2 = '| DORK = ' + t_dorks[count] + ' | ' + url.replace('https://api.github.com/search/code', 'https://github.com/search') + '&s=indexed&type=Code&o=desc'
             count = count + 1
             if t_results_urls[url] == 0:
-                sys.stdout.write(colored('%s (%d)\n' % (url2, t_results_urls[url]), 'white'))
+                result_number = t_results_urls[url]
+                sys.stdout.write(colored('%s (%d)\n' % (new_url, result_number), 'white'))
+                url2_list.append(url2)
+                result_number_list.append(result_number)
+                # d = [url2_list, result_number_list]
+                # export_data = zip_longest(*d, fillvalue='')
+                fields = ['DORK', '#OFRESULTS']
+                with open(query + '.csv', "w") as csvfile:
+                    wr = csv.writer(csvfile)
+                    for row in rows:
+                        wr.writerow(row)
+
+                csvfile.close()
             else:
-                sys.stdout.write(colored('%s (%d)\n' % (url2, t_results_urls[url]), 'green'))
+                result_number = t_results_urls[url]
+                sys.stdout.write(colored('%s (%d)\n' % (new_url, result_number), 'green'))
+                url2_list.append(url2)
+                result_number_list.append(result_number)
+                rows = zip(url2_list, result_number_list)
+                # d = [url2_list, result_number_list]
+                # export_data = zip_longest(*d, fillvalue='')
+                fields = ['DORK', '#OFRESULTS']
+                with open(query + '.csv', "w") as csvfile:
+                    wr = csv.writer(csvfile)
+                    wr.writerow(fields)
+                    for row in rows:
+                        wr.writerow(row)
+                csvfile.close()
+
         else:
             sys.stdout.write(colored('%s\n' % url2, 'red'))
-            count = count - 1
+            count = count + 1
             #Potentially code in removal from list to prevent query offset
     print('')
 
-for org in t_orgs:
-    print("QUERY PROVIDED: " + '>>>>> %s\n' % org)
-    for url in t_results[org]:
+for organization in t_organizations:
+    print("QUERY PROVIDED: " + '>>>>> %s\n' % organization)
+    for url in t_results[organization]:
         if url in t_results_urls:
             url2 = '| DORK = ' + t_dorks[count] + ' | ' + url.replace('https://api.github.com/search/code', 'https://github.com/search') + '&s=indexed&type=Code&o=desc'
             count = count + 1
@@ -231,14 +282,4 @@ for org in t_orgs:
                 sys.stdout.write(colored('%s (%d)\n' % (url2, t_results_urls[url]), 'green'))
         else:
             sys.stdout.write(colored('%s\n' % url2, 'red'))
-            count = count - 1
-            #Potentially code in removal from list to prevent query offset
-    print('')
-
-#COMPLETION BANNER
-print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-print("")
-print("             Dorking Complete! Visit your result queries to see if anything juicy returned :) ")
-print("")
-print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-print("")
+            count = count + 1
