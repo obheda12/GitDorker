@@ -28,7 +28,6 @@ RATE LIMIT NOTE: GitHub rate limits searches to 30 dorks every 60 seconds. To av
 rate limits, ensure that each dork file fed to GitDorker consists of 30 lines or less. 
 You may do a for loop to iterate dork files containing less than 30 requests each but you must 
 include a sleep for 60 seconds between each run of GitDorker.
-
 """)
 
 #IMPORTS
@@ -42,8 +41,10 @@ import re
 import requests
 import csv
 from itertools import zip_longest
+from itertools import cycle
 from termcolor import colored
 from multiprocessing.dummy import Pool
+from beautifultable import BeautifulTable
 
 #API CONFIG
 # TOKENS_FILE = os.path.dirname(os.path.realpath(__file__))
@@ -53,10 +54,11 @@ GITHUB_API_URL = 'https://api.github.com'
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--dorks", help="dorks file (required)")
 parser.add_argument("-t", "--token", help="your github token (required)")
+parser.add_argument("-tf", "--tokenfile", help="file containing new line separated github tokens ")
 parser.add_argument("-e", "--threads", help="maximum n threads, default 1")
 parser.add_argument("-q", "--query", help="query (required or -q)")
-parser.add_argument("-org", "--organization", help="organization (required or -o)")
-parser.add_argument("-o", "--output", help="organization (required or -o)")
+parser.add_argument("-org", "--organization", help="organization (required or -org)")
+parser.add_argument("-o", "--output", help="output to file name (required or -o)")
 
 parser.parse_args()
 args = parser.parse_args()
@@ -73,13 +75,9 @@ rows = []
 if args.token:
     t_tokens = args.token.split(',')
 
-# else:
-#     if os.path.isfile(TOKENS_FILE):
-#         fp = open(TOKENS_FILE, 'r')
-#         for line in fp:
-#             r = re.search('^([a-f0-9]{40})$', line)
-#             if r:
-#                 t_tokens.append(r.group(1))
+if args.tokenfile:
+    with open(args.tokenfile) as f:
+        t_tokens = f.read().splitlines()
 
 if not len(t_tokens):
     parser.error('auth token is missing')
@@ -105,17 +103,27 @@ fp = open(args.dorks, 'r')
 for line in fp:
     t_dorks.append(line.strip())
 
-#API SEARCH FUNCTION
-def githubApiSearchCode(url):
+#TOKEN ROUND ROBIN
+n = -1
+def token_round_robin():
+    global n
+    n = n + 1
+    if n == len(t_tokens):
+        n = 0
+    current_token = t_tokens[n]
+    return current_token
 
-    sys.stdout.write('progress: %d/%d\r' % (t_stats['n_current'], t_stats['n_total_urls']))
+#API SEARCH FUNCTION
+def api_search(url):
+    sys.stdout.write(colored('[#] Dorking Progress: %d/%d\r' % (t_stats['n_current'], t_stats['n_total_urls']), "blue"))
     sys.stdout.flush()
     t_stats['n_current'] = t_stats['n_current'] + 1
-    i = t_stats['n_current'] % t_stats['l_tokens']
-    headers = {"Authorization": "token " + t_tokens[i]}
+    # i = t_stats['n_current'] % t_stats['l_tokens']
+    #TODO Implement Round Robin With Tokens
+    headers = {"Authorization": "token " + token_round_robin()}
 
     try:
-        r = requests.get(url, headers=headers, timeout=5)
+        r = requests.get(url, headers=headers, timeout=10)
         json = r.json()
 
         if t_stats['n_current'] % 29 == 0:
@@ -124,7 +132,7 @@ def githubApiSearchCode(url):
                 sys.stdout.write(colored("[#] (-_-)zzZZ sleeping to avoid rate limits |{:2d} seconds remaining.".format(remaining), "blue"))
                 sys.stdout.flush()
                 time.sleep(1)
-            sys.stdout.write(colored("\r[#] Sleeping Finished!\n", "green"))
+            sys.stdout.write(colored("[#] ٩(ˊᗜˋ*) Sleeping Finished! GitDorker Is Wide Awake. Continuing Dorking Process............ و\n", "green"))
         if 'documentation_url' in json:
             print(colored("[-] error occurred: %s" % json['documentation_url'], 'red'))
         else:
@@ -138,7 +146,8 @@ def githubApiSearchCode(url):
                 colored("[#] (-_-)zzZZ sleeping due to error |{:2d} seconds remaining.".format(remaining), "blue"))
             sys.stdout.flush()
             time.sleep(1)
-            sys.stdout.write(colored("\r[#] Sleeping Finished!\n", "green"))
+            #TODO: Redo Sleeping Output to Console
+            sys.stdout.write(colored("\r[#] Sleeping Finished! GitDorker is wide awake. Continuing... ٩(ˊᗜˋ*)و\n", "green"))
         return 0
 
 #URL ENCODING FUNCTION
@@ -182,7 +191,6 @@ for organization in t_organizations:
 
 #STATS
 t_stats['n_total_urls'] = len(t_urls)
-print("-----------------------")
 print("""
    ______       __    
   / __/ /____ _/ /____
@@ -190,21 +198,18 @@ print("""
 /___/\__/\_,_/\__/___/
 **********************
 """)
-print("")
 sys.stdout.write(colored('[#] %d organizations found.\n' % len(t_organizations), 'cyan'))
 sys.stdout.write(colored('[#] %d dorks found.\n' % len(t_dorks), 'cyan'))
 sys.stdout.write(colored('[#] %d queries ran.\n' % len(t_queries), 'cyan'))
 sys.stdout.write(colored('[#] %d urls generated.\n' % len(t_urls), 'cyan'))
 sys.stdout.write(colored('[#] running %d threads.\n' % threads, 'cyan'))
 print("")
-print("-----------------------")
-print("")
 #SLEEP
 time.sleep(1)
 
 #POOL FUNCTION TO RUN API SEARCH
 pool = Pool(threads)
-pool.map(githubApiSearchCode, t_urls)
+pool.map(api_search, t_urls)
 pool.close()
 pool.join()
 
@@ -220,66 +225,117 @@ print("""
 /_/|_|\__/___/\_,_/_/\__/___/
 *****************************
 """)
+
+new_url_list = []
+result_number_list = []
+dork_name_list = []
+
+#DEFINE CONDITIONAL OUTPUT MARKERS
+sys.stdout.write(colored('[+] SUCCESS | RESULTS RETURNED ', 'green'))
+print("")
+normal = sys.stdout.write(colored('[#] NEUTRAL | NO RESULTS RETURNED', 'yellow'))
+print("")
+failure = sys.stdout.write(colored('[-] FAILURE | RATE LIMITS OR API FAILURE ', 'red'))
 print("")
 
-url2_list = []
-result_number_list = []
-
+#RESULTS LOGIC FOR QUERIES
 for query in t_queries:
-    print("QUERY PROVIDED: " + '>>>>> %s\n' % query)
+    print("")
+    sys.stdout.write(colored('QUERY PROVIDED: %s' % (query), 'cyan'))
+    print("")
+
     for url in t_results[query]:
+
         if url in t_results_urls:
-            url2 = url.replace('https://api.github.com/search/code', 'https://github.com/search') + '&s=indexed&type=Code&o=desc'
-            dork_info = '| DORK = ' + t_dorks[count] + ' | '
-            new_url = dork_info + url2
-            # url2 = '| DORK = ' + t_dorks[count] + ' | ' + url.replace('https://api.github.com/search/code', 'https://github.com/search') + '&s=indexed&type=Code&o=desc'
+            new_url = url.replace('https://api.github.com/search/code', 'https://github.com/search') + '&s=indexed&type=Code&o=desc'
+            dork_name = t_dorks[count]
+            dork_info = 'DORK = ' + dork_name + ' | '
+            result_info = dork_info + new_url
+            # new_url = '| DORK = ' + t_dorks[count] + ' | ' + url.replace('https://api.github.com/search/code', 'https://github.com/search') + '&s=indexed&type=Code&o=desc'
             count = count + 1
+
             if t_results_urls[url] == 0:
                 result_number = t_results_urls[url]
-                sys.stdout.write(colored('%s (%d)\n' % (new_url, result_number), 'white'))
-                url2_list.append(url2)
+                normal = sys.stdout.write(colored('[#] ', 'yellow'))
+                sys.stdout.write(colored('(%d) ' % (result_number), 'cyan'))
+                sys.stdout.write(colored('%s' % (result_info), 'white'))
+                new_url_list.append(new_url)
                 result_number_list.append(result_number)
-                # d = [url2_list, result_number_list]
-                # export_data = zip_longest(*d, fillvalue='')
-                fields = ['DORK', '#OFRESULTS']
-                with open(query + '.csv', "w") as csvfile:
-                    wr = csv.writer(csvfile)
-                    for row in rows:
-                        wr.writerow(row)
+                dork_name_list.append(dork_name)
 
-                csvfile.close()
             else:
                 result_number = t_results_urls[url]
-                sys.stdout.write(colored('%s (%d)\n' % (new_url, result_number), 'green'))
-                url2_list.append(url2)
+                success = sys.stdout.write(colored('[+] ', 'green'))
+                sys.stdout.write(colored('(%d) ' % (result_number), 'cyan'))
+                sys.stdout.write(colored('%s' % (result_info), 'white'))
+                new_url_list.append(new_url)
                 result_number_list.append(result_number)
-                rows = zip(url2_list, result_number_list)
-                # d = [url2_list, result_number_list]
-                # export_data = zip_longest(*d, fillvalue='')
-                fields = ['DORK', '#OFRESULTS']
-                with open(query + '.csv', "w") as csvfile:
-                    wr = csv.writer(csvfile)
-                    wr.writerow(fields)
-                    for row in rows:
-                        wr.writerow(row)
-                csvfile.close()
+                dork_name_list.append(dork_name)
 
         else:
-            sys.stdout.write(colored('%s\n' % url2, 'red'))
+            failure = sys.stdout.write(colored('[-] ', 'red'))
+            sys.stdout.write(colored('%s' % new_url, 'white'))
             count = count + 1
-            #Potentially code in removal from list to prevent query offset
-    print('')
+            # Potentially code in removal from list to prevent query offset
+        print('')
 
+#RESULTS LOGIC FOR ORGANIZATIONS
 for organization in t_organizations:
-    print("QUERY PROVIDED: " + '>>>>> %s\n' % organization)
+    print("ORGANIZTION PROVIDED: " + '%s' % organization)
+    print("")
+
     for url in t_results[organization]:
+
         if url in t_results_urls:
-            url2 = '| DORK = ' + t_dorks[count] + ' | ' + url.replace('https://api.github.com/search/code', 'https://github.com/search') + '&s=indexed&type=Code&o=desc'
+            new_url = url.replace('https://api.github.com/search/code', 'https://github.com/search') + '&s=indexed&type=Code&o=desc'
+            dork_name = t_dorks[count]
+            dork_info = ' DORK = ' + dork_name + ' | '
+            result_info = dork_info + new_url
+            # new_url = '| DORK = ' + t_dorks[count] + ' | ' + url.replace('https://api.github.com/search/code', 'https://github.com/search') + '&s=indexed&type=Code&o=desc'
             count = count + 1
+
             if t_results_urls[url] == 0:
-                sys.stdout.write(colored('%s (%d)\n' % (url2, t_results_urls[url]), 'white'))
+                result_number = t_results_urls[url]
+                normal = sys.stdout.write(colored('[#] ', 'yellow'))
+                sys.stdout.write(colored('(%d) ' % (result_number), 'cyan'))
+                sys.stdout.write(colored('%s' % (result_info), 'white'))
+                new_url_list.append(new_url)
+                result_number_list.append(result_number)
+                dork_name_list.append(dork_name)
+
             else:
-                sys.stdout.write(colored('%s (%d)\n' % (url2, t_results_urls[url]), 'green'))
+                result_number = t_results_urls[url]
+                success = sys.stdout.write(colored('[+] ', 'green'))
+                sys.stdout.write(colored('(%d) ' % (result_number), 'cyan'))
+                sys.stdout.write(colored('%s' % (result_info), 'white'))
+                new_url_list.append(new_url)
+                result_number_list.append(result_number)
+                dork_name_list.append(dork_name)
+
         else:
-            sys.stdout.write(colored('%s\n' % url2, 'red'))
+            failure = sys.stdout.write(colored('[-] ', 'red'))
+            sys.stdout.write(colored('%s' % new_url, 'white'))
             count = count + 1
+            # Potentially code in removal from list to prevent query offset
+        print('')
+
+#CSV OUTPUT TO FILE
+if args.output:
+    file_name = args.output
+    rows = zip(dork_name_list, new_url_list, result_number_list)
+    fields = ['DORK', 'URL', 'NUMBER OF RESULTS']
+    #TODO: Make output argument specific
+    with open(query + '.csv', "w") as csvfile:
+        wr = csv.writer(csvfile)
+        wr.writerow(fields)
+        for row in rows:
+            wr.writerow(row)
+    csvfile.close()
+    print("")
+    sys.stdout.write(colored("Results have been outputted into the current working directory as " + file_name + ".csv", 'green'))
+    print("")
+    print("")
+
+
+
+
