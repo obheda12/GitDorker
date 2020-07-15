@@ -1,10 +1,9 @@
 argparse
 requests
-texttable
-keyboard
-tldextract
+csv
+itertools
 termcolor
 colored
-goop
-lockfile
 Unidecode
+lockfile
+keyboard
