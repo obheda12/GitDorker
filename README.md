@@ -14,7 +14,7 @@ Within the dorks folder are a list of dorks. It is recommended to use the "alldo
 ## Screenshots
 Below is an example of the results from a query ran on "tesla.com" with a few dorks.
 
-![Usage](https://github.com/obheda12/GitDorker/blob/master/GitDorker Usage.png)
+![Usage](https://github.com/obheda12/GitDorker/blob/master/GitDorker%20Usage.png)
 ![Results](https://github.com/obheda12/GitDorker/blob/master/GitDorker%20Results.png)
 
 
