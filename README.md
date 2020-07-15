@@ -6,7 +6,15 @@ The Primary purpose of GitDorker is to provide the user with a clean and tailore
 ## Rate Limits
 GitDorker utilizes the GitHub Search API and is limited to 30 requests per minute. In order to prevent rate limites a sleep function is built into GitDorker after every 30 requests to prevent search failures. Therefore, if one were to run use the alldorks.txt file with GitDorker, the process will take roughly 5 minutes to complete. 
 
-## Recommenadtions
+## Requirements
+** Python3
+** GitHub Personal Access Token
+** Install requirements inside of the requirements.txt file of this repo (pip3 install -r requirements.txt)
+
+Please follow the guide below if you are unsure of how to create a personal access token:
+https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token
+
+## Recommendations
 It is recommended to provide GitDorker with at least two GitHub personal access tokens so that it may alternate between the two during the dorking process and reduce the likelihood of early rate limiting. Using multiple tokens from separate GitHub accounts will provide the best results
 
 ## Dorks
@@ -20,21 +28,24 @@ Below is an example of the results from running the query "tesla.com" with a sma
 
 ## Usage
 
-``````````
-usage: GitDorker.py [-h] [-d DORKS] [-t TOKEN] [-e THREADS] [-q QUERY] [-o ORG]
+usage: GitDorker.py [-h] [-d DORKS] [-t TOKEN] [-tf TOKENFILE] [-e THREADS] [-q QUERY] [-org ORGANIZATION] [-o OUTPUT]
 
 optional arguments:
   -h, --help            show this help message and exit
   -d DORKS, --dorks DORKS
                         dorks file (required)
   -t TOKEN, --token TOKEN
-                        your github token (required)
+                        your github token (required if token file not specified)
+  -tf TOKENFILE, --tokenfile TOKENFILE
+                        file containing new line separated github tokens
   -e THREADS, --threads THREADS
                         maximum n threads, default 1
   -q QUERY, --query QUERY
                         query (required or -q)
-  -o ORG, --org ORG     organization (required or -o)
-``````````
+  -org ORGANIZATION, --organization ORGANIZATION
+                        organization (required if query not specified)
+  -o OUTPUT, --output OUTPUT
+                        output to file name (required or -o)
 
 # Credits
 
