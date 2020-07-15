@@ -16,18 +16,11 @@ print("""
  \______/ |__/   \___/        |_______/  \______/ |__/      |__/  \__/ \_______/|__/      
 
 
-Find GitHub Secrets Utilizing GitHub Dorks. Simple to read and simple to chain into other
-github credential harvesters such as trufflehog or gitrob.
+Find GitHub secrets utilizing a vast list of GitHub dorks and the GitHub search api. The 
+purpose of this tool is to enumerate interesting users,repos, and files to provide an 
+easy to read overview of where a potential sensitive information exposure may reside.
 
-**Potential Workflow**
-Use GitDorker >> Find Juicy Users / Repos >> Run GitRob / TruffleHog on interesting Users / Repos >> $$$PROFIT$$$
-
-EXAMPLE SYNTAX: python3 GitDorker.py -q DOMAIN -t TOKEN -d PATH/TO/DORKFILE -e 1
-
-RATE LIMIT NOTE: GitHub rate limits searches to 30 dorks every 60 seconds. To avoid 
-rate limits, ensure that each dork file fed to GitDorker consists of 30 lines or less. 
-You may do a for loop to iterate dork files containing less than 30 requests each but you must 
-include a sleep for 60 seconds between each run of GitDorker.
+HELP: python3 GitDorker.py -h
 """)
 
 #IMPORTS
@@ -44,7 +37,6 @@ from itertools import zip_longest
 from itertools import cycle
 from termcolor import colored
 from multiprocessing.dummy import Pool
-from beautifultable import BeautifulTable
 
 #API CONFIG
 # TOKENS_FILE = os.path.dirname(os.path.realpath(__file__))
@@ -53,13 +45,12 @@ GITHUB_API_URL = 'https://api.github.com'
 #PARSER CONFIG
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--dorks", help="dorks file (required)")
-parser.add_argument("-t", "--token", help="your github token (required)")
+parser.add_argument("-t", "--token", help="your github token (required if token file not specififed)")
 parser.add_argument("-tf", "--tokenfile", help="file containing new line separated github tokens ")
 parser.add_argument("-e", "--threads", help="maximum n threads, default 1")
 parser.add_argument("-q", "--query", help="query (required or -q)")
-parser.add_argument("-org", "--organization", help="organization (required or -org)")
+parser.add_argument("-org", "--organization", help="organization's GitHub name (required or -org if query not specified)")
 parser.add_argument("-o", "--output", help="output to file name (required or -o)")
-
 parser.parse_args()
 args = parser.parse_args()
 
@@ -243,6 +234,7 @@ for query in t_queries:
     print("")
     sys.stdout.write(colored('QUERY PROVIDED: %s' % (query), 'cyan'))
     print("")
+    print("")
 
     for url in t_results[query]:
 
@@ -335,7 +327,3 @@ if args.output:
     sys.stdout.write(colored("Results have been outputted into the current working directory as " + file_name + ".csv", 'green'))
     print("")
     print("")
-
-
-
-
