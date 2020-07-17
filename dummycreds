@@ -1,5 +1,12 @@
 These are GitDorker Credentials
-passwords
-test
-supersecret
+password = 123456
+test = test
+supersecret = secret
 youwillneverfindme
+api_key = o123y1houejnduqedgbij 
+apikey = 1oi2egquewfihacoju9dfd
+AWS_KEY = nou9W7E89U0I3PDQONP4FOVDFSFSG
+ftp login = ftp://127.0.0.1
+db_user = admin
+db_password = password
+connectionstring = Provider=SQLNCLI11;Data Source=myServerAddress;Failover Partner=myMirrorServerAddress;Initial Catalog=myDataBase;Integrated Security=True;
