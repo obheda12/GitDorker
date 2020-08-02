@@ -24,10 +24,12 @@ Within the dorks folder are a list of dorks. It is recommended to use the "alldo
 
 ## Usage
 Please reference the help output below for assistance:
+
 ![Help](https://github.com/obheda12/GitDorker/blob/master/GitDorker%20Help.png)
 
 ## Screenshots
 Below is an example of the results from running the query "tesla.com" with a small list of dorks.
+
 ![Usage](https://github.com/obheda12/GitDorker/blob/master/GitDorker%20Usage.png)
 ![Results](https://github.com/obheda12/GitDorker/blob/master/GitDorker%20Results.png)
 
