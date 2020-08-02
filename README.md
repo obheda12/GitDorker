@@ -28,7 +28,7 @@ Below is an example of the results from running the query "tesla.com" with a sma
 
 ## Usage
 
-usage: GitDorker.py [-h] [-d DORKS] [-t TOKEN] [-tf TOKENFILE] [-e THREADS] [-q QUERY] [-org ORGANIZATION] [-o OUTPUT]
+'''usage: GitDorker.py [-h] [-d DORKS] [-t TOKEN] [-tf TOKENFILE] [-e THREADS] [-q QUERY] [-org ORGANIZATION] [-o OUTPUT]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -45,7 +45,7 @@ optional arguments:
   -org ORGANIZATION, --organization ORGANIZATION
                         organization (required if query not specified)
   -o OUTPUT, --output OUTPUT
-                        output to file name (required or -o)
+                        output to file name (required or -o)'''
 
 # Credits
 
