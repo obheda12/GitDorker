@@ -2,7 +2,7 @@
 
 # Credits: Modified GitHub Dorker using GitAPI and JHaddix Github Dorks List. API Integration code borrowed and modified from Gwendal Le Coguic's scripts.
 # Author: Omar Bheda
-# Version: 2.1.2
+# Version: 1.1.2
 print("""
 
 
@@ -233,7 +233,6 @@ for user in t_users:
             for dork in t_dorks:
                 for keyword in t_keywords:
                     keyword_dork = 'user:' + user + ' ' + keyword + ' ' + dork
-                    print(dork)
                     url = 'https://api.github.com/search/code?q=' + __urlencode(keyword_dork)
                     t_results[user].append( url )
                     t_urls[url] = 0
@@ -241,7 +240,6 @@ for user in t_users:
     if not args.keyword:
         for dork in t_dorks:
             dork = 'user:' + user + ' ' + dork
-            print(dork)
             url = 'https://api.github.com/search/code?q=' + __urlencode(dork)
             t_results[user].append( url )
             t_urls[url] = 0
@@ -391,7 +389,8 @@ for user in t_users:
 
             else:
                 failure = sys.stdout.write(colored('[-] ', 'red'))
-                sys.stdout.write(colored('%s' % new_url, 'white'))
+                keyword_name = t_keywords[keyword_count]
+                sys.stdout.write(colored('No KEYWORD: %s found for %s' % (keyword_name, user), 'white'))
                 if len(t_keywords) - 1 != keyword_count:
                     keyword_count = keyword_count + 1
                 else:
@@ -409,6 +408,7 @@ for user in t_users:
                 if args.keyword:
                     keyword_name = t_keywords[keyword_count]
                     dork_info = 'DORK = ' + dork_name + ' | KEYWORD = ' + keyword_name + ' | '
+                    result_info = dork_info + new_url
                     if len(t_keywords) - 1 != keyword_count:
                         keyword_count = keyword_count + 1
                     else:
