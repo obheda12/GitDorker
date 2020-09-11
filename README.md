@@ -31,7 +31,7 @@ Please reference the help output below for assistance:
 Below is an example of the results from running the query "tesla.com" with a small list of dorks.
 
 ![Usage](https://github.com/obheda12/GitDorker/blob/master/GitDorker%20Usage.png)
-![Results](https://github.com/obheda12/GitDorker/blob/master/GitDorker%20Results.png)
+![Results](https://github.com/obheda12/GitDorker/blob/master/GitDorker%20Usage%20Example%20-%20Tesla.png)
 
 Note: The more advanced queries you put (i.e incorporation of user, org, endpoint information, etc. the more succint results you will achieve)
 
