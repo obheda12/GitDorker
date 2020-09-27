@@ -1,3 +1,5 @@
+![Logo](https://github.com/obheda12/GitDorker/blob/master/GitDorker.png)
+
 # GitDorker
 GitDorker is a tool that utilizes the GitHub Search API and an extensive list of GitHub dorks that I've compiled from various sources to provide an overview of sensitive information stored on github given a search query. 
 
