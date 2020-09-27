@@ -25,7 +25,9 @@ It is recommended to provide GitDorker with at least two GitHub personal access 
 Within the dorks folder are a list of dorks. It is recommended to use the "alldorks.txt" file when mapping out your github secrets attack surface. The "alldorks.txt" is my collection of dorks that i've pulled from various resources, totalling to 239 individual dorks of sensitive github information.
 
 ## Usage
-Please reference the help output below for assistance:
+I've created a blog post with far more detail in how to use GitDorker and potential use cases here: https://medium.com/@obheda12/gitdorker-a-new-tool-for-manual-github-dorking-and-easy-bug-bounty-wins-92a0a0a6b8d5 
+
+Help Output:
 
 ![Help](https://github.com/obheda12/GitDorker/blob/master/GitDorker%20Help.png)
 
@@ -35,6 +37,9 @@ Below is an example of the results from running the query "tesla.com" with a sma
 ![Results](https://github.com/obheda12/GitDorker/blob/master/GitDorker%20Usage%20Example%20-%20Tesla.png)
 
 Note: The more advanced queries you put (i.e incorporation of user, org, endpoint information, etc. the more succint results you will achieve)
+
+## Screenshots
+I am more than open to suggestions and criticisms. If you think the tool sucks or if you find issues/bugs please let me know and recommend how I can improve it :)
 
 # Credits
 
