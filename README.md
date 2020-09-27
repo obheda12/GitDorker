@@ -40,8 +40,7 @@ Note: The more advanced queries you put (i.e incorporation of user, org, endpoin
 
 Reference points for creating GitDorker
 
-- [@hisxo](https://github.com/hisxo)
-- [@gwendallecoguic](https://github.com/gwen001) - special thank you to gwendall and his scripts that provided me with a framework for creating GitDorker.
+- [@gwendallecoguic](https://github.com/gwen001) - special thank you to gwendall and his scripts that provided me with the framework for creating GitDorker.
 
 
 # Disclaimer
