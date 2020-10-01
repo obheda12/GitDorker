@@ -36,7 +36,7 @@ Below is an example of the results from running the query "tesla.com" with a sma
 
 The following command was run to query for "tesla.com" against a list of dorks:
 
-`python3 GitDorker.py -tf tokensfile.txt -q tesla.com -d dorks/alldorks.txt -o tesla`
+`python3 GitDorker.py -tf TOKENSFILE -q tesla.com -d dorks/DORKFILE -o tesla`
 
 ![Results](https://github.com/obheda12/GitDorker/blob/master/GitDorker%20Usage%20Example%20-%20Tesla.png)
 
