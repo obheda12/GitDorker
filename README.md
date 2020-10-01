@@ -34,6 +34,10 @@ Help Output:
 ## Screenshots
 Below is an example of the results from running the query "tesla.com" with a small list of dorks.
 
+The following command was run to query for "tesla.com" against a list of dorks:
+
+`python3 GitDorker.py -tf tokensfile.txt -q tesla.com -d dorks/alldorks.txt -o tesla`
+
 ![Results](https://github.com/obheda12/GitDorker/blob/master/GitDorker%20Usage%20Example%20-%20Tesla.png)
 
 Note: The more advanced queries you put (i.e incorporation of user, org, endpoint information, etc. the more succint results you will achieve)
