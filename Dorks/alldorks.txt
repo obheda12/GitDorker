@@ -1,3 +1,5 @@
+#A compilation of dorks I've compiled from personal research and resources from the bug bounty community (techgaun, jhaddix, etc.)
+
 ".mlab.com password"
 "AWSSecretKey"
 "JEKYLL_GITHUB_TOKEN"
