@@ -1,9 +1,3 @@
-argparse
-requests
-csv
 itertools
 termcolor
-colored
-Unidecode
-lockfile
-keyboard
+tqdm
