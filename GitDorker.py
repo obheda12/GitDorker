@@ -24,20 +24,16 @@ HELP: python3 GitDorker.py -h
 """)
 
 # IMPORTS
-import os
 import sys
 import json
 import time
 import argparse
 import random
-import re
 import requests
 import csv
 from itertools import zip_longest
-from itertools import cycle
 from termcolor import colored
 from multiprocessing.dummy import Pool
-from tqdm import tqdm
 
 # API CONFIG
 GITHUB_API_URL = 'https://api.github.com'
