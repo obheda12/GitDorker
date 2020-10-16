@@ -149,6 +149,7 @@ def api_search(url):
     headers = {"Authorization": "token " + token_round_robin()}
 
     try:
+        sleep(1)
         r = requests.get(url, headers=headers, timeout=10)
         json = r.json()
 
