@@ -1,3 +1,2 @@
-itertools
 termcolor
 tqdm
