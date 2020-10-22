@@ -31,6 +31,24 @@ Help Output:
 
 ![Help](https://github.com/obheda12/GitDorker/blob/master/GitDorker%20Help.png)
 
+## Docker
+
+```bash
+
+## Build Command
+docker build -t gitdorker .
+
+## Basic Run Command
+docker run -it gitdorker
+
+## Run Command
+docker run -it -v $(pwd)/tf:/tf gitdorker -tf tf/TOKENSFILE -q tesla.com -d dorks/DORKFILE -o tesla
+
+## Run Command
+docker run -it -v $(pwd)/tf:/tf xshuden/gitdorker -tf tf/TOKENSFILE -q tesla.com -d dorks/DORKFILE -o tesla
+
+```
+
 ## Screenshots
 Below is an example of the results from running the query "tesla.com" with a small list of dorks.
 
