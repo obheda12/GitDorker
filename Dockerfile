@@ -20,4 +20,3 @@ WORKDIR /tmp/gitdorker
 RUN pip3 install -r requirements.txt
 
 ENTRYPOINT ["python3", "GitDorker.py"]
-CMD [ "-h" ]
