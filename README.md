@@ -65,10 +65,12 @@ I am more than open to suggestions and criticisms. If you think the tool sucks o
 
 # Credits
 
-Reference points for creating GitDorker
+Reference points for creating GitDorker and compiling dorks lists
 
 - [@gwendallecoguic](https://github.com/gwen001) - special thank you to gwendall and his scripts that provided me with the framework for creating GitDorker.
-
+- [@techgaun](https://github.com/techgaun) - His list of dorks provided a fantastic base for the dorks file
+- [@Shashank-In](https://github.com/Shashank-In) - His list of Travis leaks helped add additional dorks
+- [@Jhaddix](https://github.com/jhaddix) - Methodology and reference for dorks
 
 # Disclaimer
 
