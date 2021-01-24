@@ -69,7 +69,7 @@ if args.token:
 
 if args.tokenfile:
     with open(args.tokenfile) as f:
-        tokens_list = f.read().splitlines()
+        tokens_list = [i.strip() for i in f.read().splitlines() if i.strip()]
 
 if not len(tokens_list):
     parser.error('auth token is missing')
