@@ -6,18 +6,18 @@
 print("""
 
 
-  /$$$$$$  /$$   /$$           /$$$$$$$                      /$$                          
- /$$__  $$|__/  | $$          | $$__  $$                    | $$                          
-| $$  \__/ /$$ /$$$$$$        | $$  \ $$  /$$$$$$   /$$$$$$ | $$   /$$  /$$$$$$   /$$$$$$ 
+  /$$$$$$  /$$   /$$           /$$$$$$$                      /$$
+ /$$__  $$|__/  | $$          | $$__  $$                    | $$
+| $$  \__/ /$$ /$$$$$$        | $$  \ $$  /$$$$$$   /$$$$$$ | $$   /$$  /$$$$$$   /$$$$$$
 | $$ /$$$$| $$|_  $$_/        | $$  | $$ /$$__  $$ /$$__  $$| $$  /$$/ /$$__  $$ /$$__  $$
 | $$|_  $$| $$  | $$          | $$  | $$| $$  \ $$| $$  \__/| $$$$$$/ | $$$$$$$$| $$  \__/
-| $$  \ $$| $$  | $$ /$$      | $$  | $$| $$  | $$| $$      | $$_  $$ | $$_____/| $$      
-|  $$$$$$/| $$  |  $$$$/      | $$$$$$$/|  $$$$$$/| $$      | $$ \  $$|  $$$$$$$| $$      
- \______/ |__/   \___/        |_______/  \______/ |__/      |__/  \__/ \_______/|__/      
+| $$  \ $$| $$  | $$ /$$      | $$  | $$| $$  | $$| $$      | $$_  $$ | $$_____/| $$
+|  $$$$$$/| $$  |  $$$$/      | $$$$$$$/|  $$$$$$/| $$      | $$ \  $$|  $$$$$$$| $$
+ \______/ |__/   \___/        |_______/  \______/ |__/      |__/  \__/ \_______/|__/
 
 
-Find GitHub secrets utilizing a vast list of GitHub dorks and the GitHub search api. The 
-purpose of this tool is to enumerate interesting users,repos, and files to provide an 
+Find GitHub secrets utilizing a vast list of GitHub dorks and the GitHub search api. The
+purpose of this tool is to enumerate interesting users,repos, and files to provide an
 easy to read overview of where a potential sensitive information exposure may reside.
 
 HELP: python3 GitDorker.py -h
@@ -243,7 +243,7 @@ for user in users_list:
 # STATS
 stats_dict['n_total_urls'] = len(url_dict)
 print("""
-   ______       __    
+   ______       __
   / __/ /____ _/ /____
  _\ \/ __/ _ `/ __(_-<
 /___/\__/\_,_/\__/___/
@@ -274,7 +274,7 @@ keyword_count = 0
 # SHOW RESULTS
 print("")
 print("""
-   ___               ____    
+   ___               ____
   / _ \___ ___ __ __/ / /____
  / , _/ -_|_-</ // / / __(_-<
 /_/|_|\__/___/\_,_/_/\__/___/
