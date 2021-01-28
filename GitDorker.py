@@ -503,13 +503,15 @@ if args.output:
 
     # DEFINE ROWS FOR KEYWORDS AND WITHOUT
     query_with_dorks_rows = zip(dork_name_list, new_url_list, result_number_list)
+    organization_with_dorks_row = zip(dork_name_list, new_url_list, result_number_list)
     user_with_keyword_only_rows = zip(user_list, keyword_name_list, new_url_list, result_number_list)
     user_with_keyword_and_dorks_rows = zip(user_list, dork_name_list, keyword_name_list, new_url_list,
                                            result_number_list)
     user_with_dorks_only_rows = zip(user_list, dork_name_list, new_url_list, result_number_list)
 
     # DEFINE FIELDS FOR KEYWORDS AND WITHOUT
-    query_with_dorks_fields = ['QUERY','DORK', 'URL', 'NUMBER OF RESULTS']
+    query_with_dorks_fields = ['DORK', 'URL', 'NUMBER OF RESULTS']
+    organization_with_dorks_fields = ['DORK', 'URL', 'NUMBER OF RESULTS']
     user_with_keyword_only_fields = ['USER', 'KEYWORD', 'URL', 'NUMBER OF RESULTS']
     user_with_keyword_and_dorks_fields = ['USER', 'DORK', 'KEYWORD', 'URL', 'NUMBER OF RESULTS']
     user_with_dorks_only_fields = ['USER', 'DORK', 'URL', 'NUMBER OF RESULTS']
@@ -520,6 +522,10 @@ if args.output:
         if args.query or args.queryfile:
             wr.writerow(query_with_dorks_fields)
             for row in query_with_dorks_rows:
+                wr.writerow(row)
+        if args.organization:
+            wr.writerow(organization_with_dorks_fields)
+            for row in organization_with_dorks_row:
                 wr.writerow(row)
         elif args.users or args.userfile:
             if args.keyword and args.dorks:
