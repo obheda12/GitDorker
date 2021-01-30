@@ -63,8 +63,10 @@ Note: The more advanced queries you put (i.e incorporation of user, org, endpoin
 ## Screenshots
 I am more than open to suggestions and criticisms. If you think the tool sucks or if you find issues/bugs please let me know and recommend how I can improve it :)
 
-# Credits
+## If you like GitDorker and want to see additional developments and more tools like it
+<script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="obheda12" data-color="#FFDD00" data-emoji=""  data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff" ></script>
 
+# Credits
 Reference points for creating GitDorker and compiling dorks lists
 
 - [@gwendallecoguic](https://github.com/gwen001) - special thank you to gwendall and his scripts that provided me with the framework for creating GitDorker.
