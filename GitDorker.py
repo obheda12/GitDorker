@@ -6,18 +6,18 @@
 print("""
 
 
-  /$$$$$$  /$$   /$$           /$$$$$$$                      /$$                          
- /$$__  $$|__/  | $$          | $$__  $$                    | $$                          
-| $$  \__/ /$$ /$$$$$$        | $$  \ $$  /$$$$$$   /$$$$$$ | $$   /$$  /$$$$$$   /$$$$$$ 
+  /$$$$$$  /$$   /$$           /$$$$$$$                      /$$
+ /$$__  $$|__/  | $$          | $$__  $$                    | $$
+| $$  \__/ /$$ /$$$$$$        | $$  \ $$  /$$$$$$   /$$$$$$ | $$   /$$  /$$$$$$   /$$$$$$
 | $$ /$$$$| $$|_  $$_/        | $$  | $$ /$$__  $$ /$$__  $$| $$  /$$/ /$$__  $$ /$$__  $$
 | $$|_  $$| $$  | $$          | $$  | $$| $$  \ $$| $$  \__/| $$$$$$/ | $$$$$$$$| $$  \__/
-| $$  \ $$| $$  | $$ /$$      | $$  | $$| $$  | $$| $$      | $$_  $$ | $$_____/| $$      
-|  $$$$$$/| $$  |  $$$$/      | $$$$$$$/|  $$$$$$/| $$      | $$ \  $$|  $$$$$$$| $$      
- \______/ |__/   \___/        |_______/  \______/ |__/      |__/  \__/ \_______/|__/      
+| $$  \ $$| $$  | $$ /$$      | $$  | $$| $$  | $$| $$      | $$_  $$ | $$_____/| $$
+|  $$$$$$/| $$  |  $$$$/      | $$$$$$$/|  $$$$$$/| $$      | $$ \  $$|  $$$$$$$| $$
+ \______/ |__/   \___/        |_______/  \______/ |__/      |__/  \__/ \_______/|__/
 
 
-Find GitHub secrets utilizing a vast list of GitHub dorks and the GitHub search api. The 
-purpose of this tool is to enumerate interesting users,repos, and files to provide an 
+Find GitHub secrets utilizing a vast list of GitHub dorks and the GitHub search api. The
+purpose of this tool is to enumerate interesting users,repos, and files to provide an
 easy to read overview of where a potential sensitive information exposure may reside.
 
 HELP: python3 GitDorker.py -h
@@ -43,6 +43,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--dorks", help="dorks file (required)")
 parser.add_argument("-k", "--keyword", help="search on a keyword instead of a list of dorks")
 parser.add_argument("-q", "--query", help="query (required or -q)")
+parser.add_argument("-qf", "--queryfile", help="query (required or -q)")
 parser.add_argument("-u", "--users", help="users to perform dork or keyword search on (comma separated).")
 parser.add_argument("-uf", "--userfile", help="file containing new line separated users")
 parser.add_argument("-org", "--organization",
@@ -69,10 +70,10 @@ if args.token:
 
 if args.tokenfile:
     with open(args.tokenfile) as f:
-        tokens_list = f.read().splitlines()
+        tokens_list = [i.strip() for i in f.read().splitlines() if i.strip()]
 
-if not len(tokens_list):
-    parser.error('auth token is missing')
+# if not len(tokens_list):
+#     parser.error('auth token is missing')
 
 # USER ARGUMENT LOGIC
 if args.users:
@@ -80,16 +81,20 @@ if args.users:
 
 if args.userfile:
     with open(args.userfile) as f:
-        users_list = f.read().splitlines()
+        users_list = [i.strip() for i in f.read().splitlines() if i.strip()]
 
 if args.query:
     queries_list = args.query.split(',')
 
-if args.query and args.keyword:
-    parser.error('you cannot specify both a query and a keyword, please specify one or the other.')
+if args.queryfile:
+    with open(args.queryfile) as f:
+        queries_list = [i.strip() for i in f.read().splitlines() if i.strip()]
 
-if args.query and args.organization:
-    parser.error('you cannot specify both a query and a organization, please specify one or the other.')
+# if args.query and args.keyword:
+#     parser.error('you cannot specify both a query and a keyword, please specify one or the other.')
+#
+# if args.query and args.organization:
+#     parser.error('you cannot specify both a query and a organization, please specify one or the other.')
 
 if args.organization:
     organizations_list = args.organization.split(',')
@@ -99,8 +104,8 @@ if args.threads:
 else:
     threads = 1
 
-if not args.query and not args.organization and not args.users and not args.userfile:
-    parser.error('query or organization missing or users missing')
+# if not args.query and not args.queryfile and not args.organization and not args.users and not args.userfile:
+#     parser.error('query or organization missing or users missing')
 
 if args.dorks:
     fp = open(args.dorks, 'r')
@@ -112,6 +117,7 @@ if args.keyword:
 
 if not args.dorks and not args.keyword:
     parser.error('dorks file or keyword is missing')
+
 
 # TOKEN ROUND ROBIN
 n = -1
@@ -201,7 +207,7 @@ for query in queries_list:
         if ":" in query:
             dork = "{}".format(query) + " " + dork
         else:
-            dork = '"{}"'.format(query) + " " + dork
+            dork = "{}".format(query) + " " + dork
         url = 'https://api.github.com/search/code?q=' + __urlencode(dork)
         results_dict[query].append(url)
         url_dict[url] = 0
@@ -243,7 +249,7 @@ for user in users_list:
 # STATS
 stats_dict['n_total_urls'] = len(url_dict)
 print("""
-   ______       __    
+   ______       __
   / __/ /____ _/ /____
  _\ \/ __/ _ `/ __(_-<
 /___/\__/\_,_/\__/___/
@@ -274,7 +280,7 @@ keyword_count = 0
 # SHOW RESULTS
 print("")
 print("""
-   ___               ____    
+   ___               ____
   / _ \___ ___ __ __/ / /____
  / , _/ -_|_-</ // / / __(_-<
 /_/|_|\__/___/\_,_/_/\__/___/
@@ -310,7 +316,11 @@ for query in queries_list:
             dork_name = dorks_list[count]
             dork_info = 'DORK = ' + dork_name + ' | '
             result_info = dork_info + new_url
-            count = count + 1
+            if count < len(dorks_list)-1:
+                count = count + 1
+            else:
+                count = 0
+
 
             if url_results_dict[url] == 0:
                 result_number = url_results_dict[url]
@@ -493,6 +503,7 @@ if args.output:
 
     # DEFINE ROWS FOR KEYWORDS AND WITHOUT
     query_with_dorks_rows = zip(dork_name_list, new_url_list, result_number_list)
+    organization_with_dorks_row = zip(dork_name_list, new_url_list, result_number_list)
     user_with_keyword_only_rows = zip(user_list, keyword_name_list, new_url_list, result_number_list)
     user_with_keyword_and_dorks_rows = zip(user_list, dork_name_list, keyword_name_list, new_url_list,
                                            result_number_list)
@@ -500,6 +511,7 @@ if args.output:
 
     # DEFINE FIELDS FOR KEYWORDS AND WITHOUT
     query_with_dorks_fields = ['DORK', 'URL', 'NUMBER OF RESULTS']
+    organization_with_dorks_fields = ['DORK', 'URL', 'NUMBER OF RESULTS']
     user_with_keyword_only_fields = ['USER', 'KEYWORD', 'URL', 'NUMBER OF RESULTS']
     user_with_keyword_and_dorks_fields = ['USER', 'DORK', 'KEYWORD', 'URL', 'NUMBER OF RESULTS']
     user_with_dorks_only_fields = ['USER', 'DORK', 'URL', 'NUMBER OF RESULTS']
@@ -507,9 +519,13 @@ if args.output:
     # OUTPUT FOR ROWS WITH KEYWORDS AND DORKS
     with open(file_name + '_gh_dorks' + '.csv', "w") as csvfile:
         wr = csv.writer(csvfile)
-        if args.query:
+        if args.query or args.queryfile:
             wr.writerow(query_with_dorks_fields)
             for row in query_with_dorks_rows:
+                wr.writerow(row)
+        if args.organization:
+            wr.writerow(organization_with_dorks_fields)
+            for row in organization_with_dorks_row:
                 wr.writerow(row)
         elif args.users or args.userfile:
             if args.keyword and args.dorks:
