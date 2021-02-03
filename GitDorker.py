@@ -544,7 +544,7 @@ if args.output:
     csvfile.close()
     print("")
     sys.stdout.write(
-        colored("Results have been outputted into the current working directory as " + file_name + "_gh_dorks",
+        colored("Results have been output into the current working directory as " + file_name + "_gh_dorks",
                 'green'))
     print("")
     print("")
