@@ -51,7 +51,9 @@ parser.add_argument("-org", "--organization",
 parser.add_argument("-t", "--token", help="your github token (required if token file not specififed)")
 parser.add_argument("-tf", "--tokenfile", help="file containing new line separated github tokens ")
 parser.add_argument("-e", "--threads", help="maximum n threads, default 1")
+parser.add_argument("-p", "--positiveresults", action='store_true', help="display positive results only")
 parser.add_argument("-o", "--output", help="output to file name (required or -o)")
+
 parser.parse_args()
 args = parser.parse_args()
 
@@ -137,41 +139,35 @@ def api_search(url):
     if args.dorks:  # UNDO COMPLETE! :)
         if args.keyword:
             sys.stdout.write(colored(
-                '\r[#] Dorking with Keyword In Progress: %d/%d\r' % (stats_dict['n_current'], stats_dict['n_total_urls']),
-                "blue"))
+                '\r[#] $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ Dorking with Keyword In Progress $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ %d/%d\r' % (stats_dict['n_current'], stats_dict['n_total_urls']),
+                "green"))
             sys.stdout.flush()
         else:
             sys.stdout.write(
-                colored('\r[#] Dorking In Progress: %d/%d\r' % (stats_dict['n_current'], stats_dict['n_total_urls']), "blue"))
+                colored('\r[#] $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ Dorking In Progress $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$  %d/%d\r' % (stats_dict['n_current'], stats_dict['n_total_urls']), "green"))
             sys.stdout.flush()
 
     elif args.keyword and not args.dorks:
         sys.stdout.write(
-            colored('\r[#] Keyword Search In Progress: %d/%d\r' % (stats_dict['n_current'], stats_dict['n_total_urls']),
-                    "blue"))
+            colored('\r[#] $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ Keyword Search In Progress $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ %d/%d\r' % (stats_dict['n_current'], stats_dict['n_total_urls']),
+                    "green"))
         sys.stdout.flush()
 
     stats_dict['n_current'] = stats_dict['n_current'] + 1
     headers = {"Authorization": "token " + token_round_robin()}
 
     try:
-        r = requests.get(url, headers=headers, timeout=10)
+        r = requests.get(url, headers=headers)
         json = r.json()
 
         if stats_dict['n_current'] % 29 == 0:
-            for remaining in range(67, 0, -1):
+            for remaining in range(63, 0, -1):
                 sys.stdout.write("\r")
                 sys.stdout.write(colored(
                     "\r[#] (-_-)zzZZ sleeping to avoid rate limits. GitDorker will resume soon | {:2d} seconds remaining.\r".format(
                         remaining), "blue"))
                 sys.stdout.flush()
                 time.sleep(1)
-            print("")
-            sys.stdout.write(colored(
-                "\n[#] ٩(ˊᗜˋ*)و Sleeping Finished! GitDorker Is Wide Awake.\n Continuing Dorking Process............",
-                "green"))
-            sys.stdout.flush()
-
         if 'documentation_url' in json:
             print(colored("[-] error occurred: %s" % json['documentation_url'], 'red'))
         else:
@@ -321,15 +317,16 @@ for query in queries_list:
             else:
                 count = 0
 
-
             if url_results_dict[url] == 0:
-                result_number = url_results_dict[url]
-                normal = sys.stdout.write(colored('[#] ', 'yellow'))
-                sys.stdout.write(colored('(%d) ' % (result_number), 'cyan'))
-                sys.stdout.write(colored('%s' % (result_info), 'white'))
-                new_url_list.append(new_url)
-                result_number_list.append(result_number)
-                dork_name_list.append(dork_name)
+                if args.positiveresults == False:
+                    result_number = url_results_dict[url]
+                    normal = sys.stdout.write(colored('[#] ', 'yellow'))
+                    sys.stdout.write(colored('(%d) ' % (result_number), 'cyan'))
+                    sys.stdout.write(colored('%s' % (result_info), 'white'))
+                    new_url_list.append(new_url)
+                    result_number_list.append(result_number)
+                    dork_name_list.append(dork_name)
+                    print('')
 
             else:
                 result_number = url_results_dict[url]
@@ -339,12 +336,14 @@ for query in queries_list:
                 new_url_list.append(new_url)
                 result_number_list.append(result_number)
                 dork_name_list.append(dork_name)
+                print('')
 
         else:
             failure = sys.stdout.write(colored('[-] ', 'red'))
             sys.stdout.write(colored('%s' % new_url, 'white'))
             count = count + 1
-        print('')
+            print('')
+        
 
 # ADD KEYWORD TO OUTPUT TO BOTH DORKS AND ARGS
 for user in users_list:
