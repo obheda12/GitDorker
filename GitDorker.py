@@ -164,7 +164,7 @@ def api_search(url):
             for remaining in range(63, 0, -1):
                 sys.stdout.write("\r")
                 sys.stdout.write(colored(
-                    "\r[#] (-_-)zzZZ sleeping to avoid rate limits. GitDorker will resume soon | {:2d} seconds remaining.\r".format(
+                    "\r[#] (-_-)zzZZzzZZzzZZzzZZ sleeping to avoid rate limits. GitDorker will resume soon (-_-)zzZZzzZZzzZZzzZZ | {:2d} seconds remaining.\r".format(
                         remaining), "blue"))
                 sys.stdout.flush()
                 time.sleep(1)
