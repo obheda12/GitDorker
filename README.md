@@ -30,6 +30,9 @@ Within the dorks folder are a list of dorks. It is recommended to use the "alldo
 ## Usage
 I've created a blog post with far more detail in how to use GitDorker and potential use cases here: https://medium.com/@obheda12/gitdorker-a-new-tool-for-manual-github-dorking-and-easy-bug-bounty-wins-92a0a0a6b8d5 
 
+For a full detailed look of use cases and how to use GitDorker's most updated features please see the BlackHat Presentation below:
+https://youtu.be/UwzB5a5GrZk
+
 Help Output:
 
 ![Help](https://github.com/obheda12/GitDorker/blob/master/GitDorker%20Help.png)
