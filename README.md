@@ -5,7 +5,7 @@ GitDorker is a tool that utilizes the GitHub Search API and an extensive list of
 
 The Primary purpose of GitDorker is to provide the user with a clean and tailored attack surface to begin harvesting sensitive information on GitHub. GitDorker can be used with additional tools such as GitRob or Trufflehog on interesting repos or users discovered from GitDorker to produce best results.
 
-## In Depth Video of Usage
+## In Depth How to Video and Use Cases
 https://youtu.be/UwzB5a5GrZk
 
 ## Rate Limits
