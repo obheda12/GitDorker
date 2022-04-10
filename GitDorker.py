@@ -20,20 +20,26 @@ Find GitHub secrets utilizing a vast list of GitHub dorks and the GitHub search 
 purpose of this tool is to enumerate interesting users,repos, and files to provide an
 easy to read overview of where a potential sensitive information exposure may reside.
 
-HELP: python3 GitDorker.py -h
+Modified by: Internon
 """)
 
 # IMPORTS
 import sys
 import json
 import time
+import datetime
 import argparse
 import random
 import requests
 import csv
+from functools import partial
 from itertools import zip_longest
 from termcolor import colored
 from multiprocessing.dummy import Pool
+import multiprocessing
+import threading
+import tqdm
+import signal
 
 # API CONFIG
 GITHUB_API_URL = 'https://api.github.com'
@@ -53,7 +59,6 @@ parser.add_argument("-org", "--organization",
                     help="organization's GitHub name (required or -org if query not specified)")
 parser.add_argument("-t", "--token", help="your github token (required if token file not specififed)")
 parser.add_argument("-tf", "--tokenfile", help="file containing new line separated github tokens ")
-parser.add_argument("-e", "--threads", help="maximum n threads, default 1")
 parser.add_argument("-p", "--positiveresults", action='store_true', help="display positive results only")
 parser.add_argument("-o", "--output", help="output to file name (required or -o)")
 
@@ -67,7 +72,6 @@ queries_list = []
 organizations_list = []
 users_list = []
 keywords_list = []
-
 # TOKEN ARGUMENT LOGIC
 if args.token:
     tokens_list = args.token.split(',')
@@ -106,11 +110,6 @@ if args.patternfilter:
 if args.organization:
     organizations_list = args.organization.split(',')
 
-if args.threads:
-    threads = int(args.threads)
-else:
-    threads = 1
-
 # if not args.query and not args.queryfile and not args.organization and not args.users and not args.userfile:
 #     parser.error('query or organization missing or users missing')
 
@@ -128,67 +127,35 @@ if not args.dorks and not args.keyword:
 # NUMBER OF REQUESTS PER MINUTE (TOKENS MUST BE UNIQUE)
 requests_per_minute = (len(tokens_list) * 30) - 1
 
-# TOKEN ROUND ROBIN
-n = -1
-
-
-def token_round_robin():
-    global n
-    n = n + 1
-    if n == len(tokens_list):
-        n = 0
-    current_token = tokens_list[n]
-    return current_token
-
-
+mylock = threading.Lock()
+mylock2 = threading.Lock()
 # API SEARCH FUNCTION
 def api_search(url):
-    if args.dorks:  # UNDO COMPLETE! :)
-        if args.keyword:
-            sys.stdout.write(colored(
-                '\r[#] $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ Dorking with Keyword In Progress $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ %d/%d\r' % (stats_dict['n_current'], stats_dict['n_total_urls']),
-                "green"))
-            sys.stdout.flush()
-        else:
-            sys.stdout.write(
-                colored('\r[#] $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ Dorking In Progress $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$  %d/%d\r' % (stats_dict['n_current'], stats_dict['n_total_urls']), "green"))
-            sys.stdout.flush()
-
-    elif args.keyword and not args.dorks:
-        sys.stdout.write(
-            colored('\r[#] $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ Keyword Search In Progress $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ %d/%d\r' % (stats_dict['n_current'], stats_dict['n_total_urls']),
-                    "green"))
-        sys.stdout.flush()
-
     stats_dict['n_current'] = stats_dict['n_current'] + 1
-    headers = {"Authorization": "token " + token_round_robin()}
-
+    created = multiprocessing.Process()
+    current = multiprocessing.current_process()
+    thread_number = created._identity[0]
+    token = tokens_list[thread_number-3]
+    headers = {"Authorization": "token " + token}
     try:
+        time.sleep(random.uniform(0.5, 1.5))
         r = requests.get(url, headers=headers)
         json = r.json()
-        if args.limitbypass:
-            if stats_dict['n_current'] % requests_per_minute == 0:
-                for remaining in range(63, 0, -1):
-                    sys.stdout.write("\r")
-                    sys.stdout.write(colored(
-                        "\r[#] (-_-)zzZZzzZZzzZZzzZZ sleeping to avoid rate limits. GitDorker will resume soon (-_-)zzZZzzZZzzZZzzZZ | {:2d} seconds remaining.\r".format(
-                            remaining), "blue"))
-                    sys.stdout.flush()
-                    time.sleep(1)
-        else:
-            if stats_dict['n_current'] % 29 == 0:
-                for remaining in range(63, 0, -1):
-                    sys.stdout.write("\r")
-                    sys.stdout.write(colored(
-                        "\r[#] (-_-)zzZZzzZZzzZZzzZZ sleeping to avoid rate limits. GitDorker will resume soon (-_-)zzZZzzZZzzZZzzZZ | {:2d} seconds remaining.\r".format(
-                            remaining), "blue"))
-                    sys.stdout.flush()
-                    time.sleep(1)
-
+        if int(r.headers["X-RateLimit-Remaining"]) <= 1:
+            seconds = r.headers["X-RateLimit-Reset"]
+            end_datetime = datetime.datetime.fromtimestamp(int(seconds))
+            if (end_datetime - datetime.datetime.now()).total_seconds() <= 0:
+                time.sleep(2)
+            else:
+                time.sleep((end_datetime - datetime.datetime.now()).total_seconds())
         if 'documentation_url' in json:
-            print(colored("[-] error occurred: %s" % json['documentation_url'], 'red'))
+            #It seems that the GitDork is working better without a delay here and only saving the errors for the following check
+            #time.sleep(15)
+            with mylock2:
+                url_errors_dict[url] = json['documentation_url']
         else:
-            url_results_dict[url] = json['total_count']
+            with mylock:
+                url_results_dict[url] = json['total_count']
 
     except Exception as e:
         print(colored("[-] error occurred: %s" % e, 'red'))
@@ -206,7 +173,9 @@ def __urlencode(str):
 # DECLARE DICTIONARIES
 url_dict = {}
 results_dict = {}
-url_results_dict = {}
+url_results_dict = multiprocessing.Manager().dict()
+url_errors_dict = multiprocessing.Manager().dict()
+global stats_dict
 stats_dict = {
     'l_tokens': len(tokens_list),
     'n_current': 0,
@@ -311,7 +280,8 @@ sys.stdout.write(colored('[#] %d keywords found.\n' % len(keywords_list), 'cyan'
 sys.stdout.write(colored('[#] %d queries ran.\n' % len(queries_list), 'cyan'))
 sys.stdout.write(colored('[#] %d urls generated.\n' % len(url_dict), 'cyan'))
 sys.stdout.write(colored('[#] %d tokens being used.\n' % len(tokens_list), 'cyan'))
-sys.stdout.write(colored('[#] running %d threads.\n' % threads, 'cyan'))
+#The idea is that GitHub api ratelimit is based on each account so if we make each token as a thread and we control the time and the rate limit reset, we can increment performance with errors control
+sys.stdout.write(colored('[#] %d threads (For more threads and be faster increment tokens).\n' % len(tokens_list), 'cyan'))
 if args.limitbypass:
     sys.stdout.write(colored('[#] %d requests per minute allowed\n' % requests_per_minute, 'cyan'))
 else:
@@ -319,13 +289,49 @@ else:
 print("")
 # SLEEP
 time.sleep(1)
-
+def init_worker():
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
 # POOL FUNCTION TO RUN API SEARCH
-pool = Pool(threads)
-pool.map(api_search, url_dict)
-pool.close()
-pool.join()
-
+threads = len(tokens_list)
+pool = multiprocessing.Pool(threads, init_worker)
+whilecount = 1
+startloop = time.time()
+for _ in tqdm.tqdm(pool.imap(api_search, url_dict), total=len(url_dict)):
+    pass
+endloop = time.time()
+print(colored("We are going to process the errors until no errors found", 'cyan'))
+print(colored("PRESS CONTROL + C to stop the loops", 'cyan'))
+print("")
+try:
+    while len(url_errors_dict) != 0:
+        timeinloop = endloop - startloop
+        whilecount = whilecount + 1
+        print(colored("Time elapsed since starting loops: %s seconds" % int(float(timeinloop)), 'green'))
+        print("")
+        url_dict = url_errors_dict.copy()
+        s = set()
+        for val in url_errors_dict.values():
+            s.add(val)
+        print(colored("Errors reasons on loop %s: (secondari-rate-limit error is normal)" % whilecount, 'cyan'))
+        for error in s:
+            if "secondary-rate-limits" not in error:
+                print(colored(error, 'red'))
+            else:
+                print(colored(error, 'cyan'))
+        print("")
+        url_errors_dict.clear()
+        time.sleep(10)
+        for _ in tqdm.tqdm(pool.imap(api_search, url_dict), total=len(url_dict)):
+            pass
+        endloop = time.time()
+    pool.close()
+    pool.join()
+except KeyboardInterrupt:
+    print(colored("Stopped errors processing, check manually the errors from the following list.", 'red'))
+    timeinloop = endloop - startloop
+    print(colored("Time elapsed since starting loops: %s seconds" % timeinloop, 'green'))
+    pool.terminate()
+    pool.join()
 # SET COUNT
 count = 0
 keyword_count = 0
@@ -362,7 +368,6 @@ for query in queries_list:
     print("")
 
     for url in results_dict[query]:
-
         if url in url_results_dict:
             if args.recentlyindexed:
                 new_url = url.replace('https://api.github.com/search/code',
@@ -401,7 +406,7 @@ for query in queries_list:
 
         else:
             failure = sys.stdout.write(colored('[-] ', 'red'))
-            sys.stdout.write(colored('%s' % new_url, 'white'))
+            sys.stdout.write(colored('%s' % url, 'white'))
             count = count + 1
             print('')
 
