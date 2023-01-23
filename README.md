@@ -35,7 +35,7 @@ https://youtu.be/UwzB5a5GrZk
 
 Help Output:
 
-![Help](https://github.com/obheda12/GitDorker/blob/master/GitDorker%20Help.png)
+![Help](https://github.com/halencarjunior/GitDorker/blob/master/gitdorker-help.jpg)
 
 ## Docker
 
