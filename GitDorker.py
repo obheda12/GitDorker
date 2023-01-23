@@ -46,6 +46,7 @@ parser.add_argument("-q", "--query", help="query (required or -q)")
 parser.add_argument("-qf", "--queryfile", help="query (required or -q)")
 parser.add_argument("-ri", "--recentlyindexed", action='store_true', help="sort results of queries from most recent first")
 parser.add_argument("-lb", "--limitbypass", action='store_true', help="increase requests per minute when using multiple tokens from UNIQUE accounts")
+parser.add_argument("-rq", "--requestsmin", help="Force how many requests per minute you want to configure. If you configure it, -lb will be override")
 parser.add_argument("-pf", "--patternfilter", action='store_true', help="filter out noise/patterns for test/example keys")
 parser.add_argument("-u", "--users", help="users to perform dork or keyword search on (comma separated).")
 parser.add_argument("-uf", "--userfile", help="file containing new line separated users")
@@ -126,7 +127,11 @@ if not args.dorks and not args.keyword:
     parser.error('dorks file or keyword is missing')
 
 # NUMBER OF REQUESTS PER MINUTE (TOKENS MUST BE UNIQUE)
-requests_per_minute = (len(tokens_list) * 30) - 1
+if args.requestsmin:
+    requests_per_minute = int(args.requestsmin)
+    args.limitbypass = False
+else:
+    requests_per_minute = (len(tokens_list) * 30) - 1
 
 # TOKEN ROUND ROBIN
 n = -1
@@ -166,7 +171,16 @@ def api_search(url):
     try:
         r = requests.get(url, headers=headers)
         json = r.json()
-        if args.limitbypass:
+        if args.requestsmin:
+            if stats_dict['n_current'] % int(args.requestsmin) == 0:
+                for remaining in range(63, 0, -1):
+                    sys.stdout.write("\r")
+                    sys.stdout.write(colored(
+                        "\r[#] (-_-)zzZZzzZZzzZZzzZZ sleeping to avoid rate limits. GitDorker will resume soon (-_-)zzZZzzZZzzZZzzZZ | {:2d} seconds remaining.\r".format(
+                            remaining), "blue"))
+                    sys.stdout.flush()
+                    time.sleep(1)
+        elif args.limitbypass:
             if stats_dict['n_current'] % requests_per_minute == 0:
                 for remaining in range(63, 0, -1):
                     sys.stdout.write("\r")
@@ -176,7 +190,7 @@ def api_search(url):
                     sys.stdout.flush()
                     time.sleep(1)
         else:
-            if stats_dict['n_current'] % 29 == 0:
+            if stats_dict['n_current'] % 30 == 0:
                 for remaining in range(63, 0, -1):
                     sys.stdout.write("\r")
                     sys.stdout.write(colored(
@@ -311,8 +325,11 @@ sys.stdout.write(colored('[#] %d keywords found.\n' % len(keywords_list), 'cyan'
 sys.stdout.write(colored('[#] %d queries ran.\n' % len(queries_list), 'cyan'))
 sys.stdout.write(colored('[#] %d urls generated.\n' % len(url_dict), 'cyan'))
 sys.stdout.write(colored('[#] %d tokens being used.\n' % len(tokens_list), 'cyan'))
+sys.stdout.write(colored('[#] %d requests/min configured.\n' % requests_per_minute, 'cyan'))
 sys.stdout.write(colored('[#] running %d threads.\n' % threads, 'cyan'))
-if args.limitbypass:
+if args.requestsmin:
+    sys.stdout.write(colored('[#] %d requests per minute allowed\n' % requests_per_minute, 'cyan'))
+elif args.limitbypass:
     sys.stdout.write(colored('[#] %d requests per minute allowed\n' % requests_per_minute, 'cyan'))
 else:
     sys.stdout.write(colored('[#] 29 requests per minute allowed\n', 'cyan'))
