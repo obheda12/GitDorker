@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+
 # Credits: Modified GitHub Dorker using GitAPI and my personal compiled list of dorks across multiple resources. API Request structure modeled and modified and modified from Gwendal Le Coguic's scripts.
 # Author: Omar Bheda
 # Version: 1.1.3
@@ -34,6 +35,11 @@ import csv
 from itertools import zip_longest
 from termcolor import colored
 from multiprocessing.dummy import Pool
+import urllib3
+from requests.auth import HTTPBasicAuth
+
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # API CONFIG
 GITHUB_API_URL = 'https://api.github.com'
@@ -126,7 +132,9 @@ if not args.dorks and not args.keyword:
     parser.error('dorks file or keyword is missing')
 
 # NUMBER OF REQUESTS PER MINUTE (TOKENS MUST BE UNIQUE)
-requests_per_minute = (len(tokens_list) * 30) - 1
+# requests_per_minute = (len(tokens_list) * 30) - 1
+requests_per_minute = 29
+
 
 # TOKEN ROUND ROBIN
 n = -1
@@ -145,45 +153,62 @@ def token_round_robin():
 def api_search(url):
     if args.dorks:  # UNDO COMPLETE! :)
         if args.keyword:
+            sys.stdout.write("\r" + " " * 150 + "\r")  # Clear the current line
             sys.stdout.write(colored(
                 '\r[#] $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ Dorking with Keyword In Progress $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ %d/%d\r' % (stats_dict['n_current'], stats_dict['n_total_urls']),
                 "green"))
             sys.stdout.flush()
         else:
+            sys.stdout.write("\r" + " " * 150 + "\r")  # Clear the current line
             sys.stdout.write(
                 colored('\r[#] $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ Dorking In Progress $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$  %d/%d\r' % (stats_dict['n_current'], stats_dict['n_total_urls']), "green"))
             sys.stdout.flush()
 
     elif args.keyword and not args.dorks:
+        sys.stdout.write("\r" + " " * 150 + "\r")  # Clear the current line
         sys.stdout.write(
             colored('\r[#] $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ Keyword Search In Progress $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ %d/%d\r' % (stats_dict['n_current'], stats_dict['n_total_urls']),
                     "green"))
         sys.stdout.flush()
 
     stats_dict['n_current'] = stats_dict['n_current'] + 1
-    headers = {"Authorization": "token " + token_round_robin()}
+    headers = {"Authorization": "token " + token_round_robin(), "User-Agent": "Mozilla/5.0 (Linux; Android 8.0.0; SM-G960F Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.84 Mobile Safari/537.36"}
 
     try:
-        r = requests.get(url, headers=headers)
+        r = requests.get(url,headers=headers)
         json = r.json()
-        if args.limitbypass:
-            if stats_dict['n_current'] % requests_per_minute == 0:
-                for remaining in range(63, 0, -1):
-                    sys.stdout.write("\r")
-                    sys.stdout.write(colored(
-                        "\r[#] (-_-)zzZZzzZZzzZZzzZZ sleeping to avoid rate limits. GitDorker will resume soon (-_-)zzZZzzZZzzZZzzZZ | {:2d} seconds remaining.\r".format(
-                            remaining), "blue"))
-                    sys.stdout.flush()
-                    time.sleep(1)
-        else:
-            if stats_dict['n_current'] % 29 == 0:
-                for remaining in range(63, 0, -1):
-                    sys.stdout.write("\r")
-                    sys.stdout.write(colored(
-                        "\r[#] (-_-)zzZZzzZZzzZZzzZZ sleeping to avoid rate limits. GitDorker will resume soon (-_-)zzZZzzZZzzZZzzZZ | {:2d} seconds remaining.\r".format(
-                            remaining), "blue"))
-                    sys.stdout.flush()
-                    time.sleep(1)
+        if r.status_code==403:
+            r = requests.get(url)
+            for remaining in range(60, 0, -1):
+                sys.stdout.write("\r")
+                sys.stdout.write(colored(
+                    "\r[#] (-_-)zzZZzzZZzzZZzzZZ sleeping to avoid rate limits. GitDorker will resume soon (-_-)zzZZzzZZzzZZzzZZ | {:2d} seconds remaining.\r".format(
+                        remaining), "blue"))
+                sys.stdout.flush()
+                time.sleep(1)
+            r = requests.get(url,headers=headers)
+            json = r.json()
+
+
+
+        # if args.limitbypass:
+        #     if stats_dict['n_current'] % requests_per_minute == 0:
+        #         for remaining in range(103, 0, -1):
+        #             sys.stdout.write("\r")
+        #             sys.stdout.write(colored(
+        #                 "\r[#] (-_-)zzZZzzZZzzZZzzZZ sleeping to avoid rate limits. GitDorker will resume soon (-_-)zzZZzzZZzzZZzzZZ | {:2d} seconds remaining.\r".format(
+        #                     remaining), "blue"))
+        #             sys.stdout.flush()
+        #             time.sleep(1)
+        # else:
+        #     if stats_dict['n_current'] % 5 == 0:
+        #         for remaining in range(103, 0, -1):
+        #             sys.stdout.write("\r")
+        #             sys.stdout.write(colored(
+        #                 "\r[#] (-_-)zzZZzzZZzzZZzzZZ sleeping to avoid rate limits. GitDorker will resume soon (-_-)zzZZzzZZzzZZzzZZ | {:2d} seconds remaining.\r".format(
+        #                     remaining), "blue"))
+        #             sys.stdout.flush()
+        #             time.sleep(1)
 
         if 'documentation_url' in json:
             print(colored("[-] error occurred: %s" % json['documentation_url'], 'red'))
